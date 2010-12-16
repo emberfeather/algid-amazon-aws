@@ -1,0 +1,8 @@
+.project
+build/export
+build/logs
+build/settings/user.properties
+build/unit
+amazon-aws/config/settings.json.cfm
+amazon-aws/config/version.json.cfm
+dist/
