@@ -1,8 +1,8 @@
 {
-	"archive": "",
+	"archive": "http://github.com/emberfeather/algid-amazon-aws/tarball/0.1.0",
 	"key": "amazon-aws",
 	"title": "Amazon AWS",
-	"releaseNotes": "",
-	"URL": "",
+	"releaseNotes": "http://github.com/emberfeather/algid-amazon-aws/wiki/Release-Notes",
+	"URL": "http://github.com/emberfeather/algid-amazon-aws",
 	"version": "0.1.0"
 }
