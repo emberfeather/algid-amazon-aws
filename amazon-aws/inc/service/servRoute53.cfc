@@ -52,6 +52,7 @@
 		<cfset var modelSerial = '' />
 		<cfset var nameServer = '' />
 		<cfset var observer = '' />
+		<cfset var parsed = '' />
 		<cfset var plugin = '' />
 		<cfset var requestDate = '' />
 		<cfset var results = '' />
@@ -121,6 +122,7 @@
 		<cfset var hmac = '' />
 		<cfset var hostedZone = '' />
 		<cfset var hostedZones = '' />
+		<cfset var parsed = '' />
 		<cfset var plugin = '' />
 		<cfset var results = '' />
 		<cfset var service = '' />
@@ -170,8 +172,11 @@
 		
 		<cfset var awsKeys = '' />
 		<cfset var changeInfo = '' />
+		<cfset var delegationSet = '' />
 		<cfset var hmac = '' />
+		<cfset var nameServer = '' />
 		<cfset var observer = '' />
+		<cfset var parsed = '' />
 		<cfset var plugin = '' />
 		<cfset var requestDate = '' />
 		<cfset var requestReference = createUUID() />
