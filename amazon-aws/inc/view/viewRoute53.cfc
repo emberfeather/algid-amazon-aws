@@ -29,6 +29,19 @@
 		<cfreturn theForm.toHTML(theURL.get()) />
 	</cffunction>
 	
+	<cffunction name="detailChange" access="public" returntype="string" output="false">
+		<cfargument name="change" type="component" required="true" />
+		
+		<cfset var html = '' />
+		
+		<!--- TODO Make a nice display of the information for the change --->
+		<cfsavecontent variable="html">
+			<cfset arguments.change.print() />
+		</cfsavecontent>
+		
+		<cfreturn html />
+	</cffunction>
+	
 	<cffunction name="detailHostedZone" access="public" returntype="string" output="false">
 		<cfargument name="hostedZone" type="component" required="true" />
 		

@@ -5,13 +5,14 @@
 	
 	hostedZone = servRoute53.getHostedZone(user, theUrl.search('hostedZoneID'));
 	
-	servRoute53.deleteHostedZone(user, hostedZone);
+	change = servRoute53.deleteHostedZone(user, hostedZone);
 	
 	// Add a success message
 	transport.theSession.managers.singleton.getSuccess().addMessages('The hosted zone ''' & hostedZone.getName() & ''' was successfully submitted for deletion.');
 	
 	// Redirect
-	theURL.setRedirect('_base', '/admin/aws/route53/hostedZone/list');
+	theURL.setRedirect('_base', '/admin/aws/route53/change');
+	theURL.setRedirect('change', change.getChangeID());
 	theURL.removeRedirect('hostedZone');
 	
 	theURL.redirectRedirect();

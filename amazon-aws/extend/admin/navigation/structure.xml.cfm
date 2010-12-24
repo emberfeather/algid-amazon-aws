@@ -2,6 +2,8 @@
 	<admin>
 		<aws position="main">
 			<route53 position="main">
+				<change position="main"/>
+				
 				<hostedZone position="main">
 					<add position="action"/>
 					<delete position="action"/>

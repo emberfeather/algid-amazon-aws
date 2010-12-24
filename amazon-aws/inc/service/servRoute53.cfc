@@ -20,6 +20,7 @@
 		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZone" type="component" required="true" />
 		
+		<cfset var change = '' />
 		<cfset var delegationSet = '' />
 		<cfset var hostedZone = '' />
 		<cfset var modelSerial = '' />
@@ -50,16 +51,61 @@
 		<!--- Pull the data in from the response --->
 		<cfset parsed = xmlParse(results.filecontent).xmlroot />
 		
-		<cfset changeInfo = {
-			'changeInfoID': parsed.changeInfo.id.xmlText,
-			'status': parsed.changeInfo.status.xmlText,
-			'submittedAt': parsed.changeInfo.submittedAt.xmlText
-		} />
+		<cfset change = getModel('amazon-aws', 'change') />
+		
+		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
+		<cfset change.setStatus(parsed.status.id.xmlText) />
+		<cfset change.setSubmittedAt(parsed.submittedAt.id.xmlText) />
 		
 		<!--- After Delete Event --->
 		<cfset observer.afterHostedZoneDelete(variables.transport, arguments.currUser, arguments.hostedZone) />
 		
-		<cfreturn changeInfo />
+		<cfreturn change />
+	</cffunction>
+	
+	<cffunction name="getChange" access="public" returntype="component" output="false">
+		<cfargument name="currUser" type="component" required="true" />
+		<cfargument name="changeID" type="string" required="true" />
+		
+		<cfset var delegationSet = '' />
+		<cfset var change = '' />
+		<cfset var modelSerial = '' />
+		<cfset var nameServer = '' />
+		<cfset var observer = '' />
+		<cfset var parsed = '' />
+		<cfset var requestDate = '' />
+		<cfset var results = '' />
+		
+		<cfset requestDate = getDate() />
+		
+		<!--- Get the event observer --->
+		<cfset observer = getPluginObserver('amazon-aws', 'route53') />
+		
+		<cfset change = getModel('amazon-aws', 'change') />
+		
+		<!--- Before Get Event --->
+		<cfset observer.beforeChangeGet(variables.transport, arguments.currUser, arguments.changeID) />
+		
+		<!--- Retrieve the change --->
+		<cfhttp method="get" url="https://#variables.service.hostname#/#variables.service.version#/change/#listLast(arguments.changeID, '/')#" result="results">
+			<cfhttpparam type="header" name="Date" value="#requestDate#" />
+			<cfhttpparam type="header" name="X-Amzn-Authorization" value="AWS3-HTTPS AWSAccessKeyId=#variables.awsKeys.accessKeyID#,Algorithm=HmacSHA256,Signature=#variables.hmac.getSignatureAsBase64(requestDate, variables.awsKeys.secretKey, 'hmacSHA256')#" />
+		</cfhttp>
+		
+		<cfif results.status_code neq 200>
+			<cfthrow message="Unable to complete web service call" detail="Server responded with a #results.status_code# status" extendedinfo="#results.filecontent#" />
+		</cfif>
+		
+		<cfset parsed = xmlParse(results.filecontent).xmlroot />
+		
+		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
+		<cfset change.setStatus(parsed.status.id.xmlText) />
+		<cfset change.setSubmittedAt(parsed.submittedAt.id.xmlText) />
+		
+		<!--- After Get Event --->
+		<cfset observer.afterChangeGet(variables.transport, arguments.currUser, arguments.changeID) />
+		
+		<cfreturn change />
 	</cffunction>
 	
 	<cffunction name="getDate" access="public" returntype="string" output="false">
@@ -173,11 +219,11 @@
 		<cfreturn hostedZones />
 	</cffunction>
 	
-	<cffunction name="setHostedZone" access="public" returntype="struct" output="false">
+	<cffunction name="setHostedZone" access="public" returntype="component" output="false">
 		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZone" type="component" required="true" />
 		
-		<cfset var changeInfo = '' />
+		<cfset var change = '' />
 		<cfset var delegationSet = '' />
 		<cfset var nameServer = '' />
 		<cfset var observer = '' />
@@ -232,13 +278,13 @@
 		<cfset hostedZone.setCallerReference(parsed.hostedZone.callerReference.xmlText) />
 		<cfset hostedZone.setComment(parsed.hostedZone.config.comment.xmlText) />
 		
-		<cfset changeInfo = {
-			'changeInfoID': parsed.changeInfo.id.xmlText,
-			'status': parsed.changeInfo.status.xmlText,
-			'submittedAt': parsed.changeInfo.submittedAt.xmlText
-		} />
+		<cfset change = getModel('amazon-aws', 'change') />
 		
-		<cfset hostedZone.setChangeInfo(changeInfo) />
+		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
+		<cfset change.setStatus(parsed.status.id.xmlText) />
+		<cfset change.setSubmittedAt(parsed.submittedAt.id.xmlText) />
+		
+		<cfset hostedZone.setChange(change) />
 		
 		<cfset delegationSet = {
 			'nameServers': []
@@ -256,6 +302,6 @@
 		<!--- After Save Event --->
 		<cfset observer.afterHostedZoneSave(variables.transport, arguments.currUser, arguments.hostedZone) />
 		
-		<cfreturn changeInfo />
+		<cfreturn change />
 	</cffunction>
 </cfcomponent>

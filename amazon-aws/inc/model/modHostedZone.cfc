@@ -13,10 +13,9 @@ component extends="algid.inc.resource.base.model" {
 			defaultValue = createUUID()
 		);
 		
-		// ChangeInformation
+		// Change Information
 		addAttribute(
-			attribute = 'changeInfo',
-			defaultValue = {}
+			attribute = 'change'
 		);
 		
 		// Comment
