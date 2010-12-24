@@ -124,4 +124,36 @@
 		
 		<cfreturn datagrid.toHTML( arguments.data, arguments.options ) />
 	</cffunction>
+	
+	<cffunction name="datagridResourceRecords" access="public" returntype="string" output="false">
+		<cfargument name="data" type="any" required="true" />
+		<cfargument name="options" type="struct" default="#{}#" />
+		
+		<cfset var datagrid = '' />
+		<cfset var i18n = '' />
+		
+		<cfset arguments.options.theURL = variables.transport.theRequest.managers.singleton.getURL() />
+		<cfset i18n = variables.transport.theApplication.managers.singleton.getI18N() />
+		<cfset datagrid = variables.transport.theApplication.factories.transient.getDatagrid(i18n, variables.transport.theSession.managers.singleton.getSession().getLocale()) />
+		
+		<!--- Add the resource bundle for the view --->
+		<cfset datagrid.addBundle('plugins/amazon-aws/i18n/inc/view', 'viewRoute53') />
+		
+		<cfset datagrid.addColumn({
+			key = 'name',
+			label = 'hostedZone'
+		}) />
+		
+		<cfset datagrid.addColumn({
+			key = 'type',
+			label = 'resourceRecord'
+		}) />
+		
+		<cfset datagrid.addColumn({
+			key = 'ttl',
+			label = 'ttl'
+		}) />
+		
+		<cfreturn datagrid.toHTML( arguments.data, arguments.options ) />
+	</cffunction>
 </cfcomponent>

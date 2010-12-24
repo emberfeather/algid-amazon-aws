@@ -173,13 +173,10 @@
 	</cffunction>
 	
 	<cffunction name="getHostedZones" access="public" returntype="query" output="false">
+		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="filter" type="struct" default="#{}#" />
 		
-		<cfset var defaults = {
-			isArchived = false,
-			orderBy = 'domain',
-			orderSort = 'asc'
-		} />
+		<cfset var defaults = {} />
 		<cfset var elements = '' />
 		<cfset var hostedZone = '' />
 		<cfset var hostedZones = '' />
@@ -195,7 +192,7 @@
 		
 		<cfset requestDate = getDate() />
 		
-		<!--- TODO Retrieve the hosted zones --->
+		<!--- Retrieve the hosted zones --->
 		<cfhttp method="get" url="https://#variables.service.hostname#/#variables.service.version#/hostedzone" result="results">
 			<cfhttpparam type="header" name="Date" value="#requestDate#" />
 			<cfhttpparam type="header" name="X-Amzn-Authorization" value="AWS3-HTTPS AWSAccessKeyId=#variables.awsKeys.accessKeyID#,Algorithm=HmacSHA256,Signature=#variables.hmac.getSignatureAsBase64(requestDate, variables.awsKeys.secretKey, 'hmacSHA256')#" />
@@ -217,6 +214,55 @@
 		</cfloop>
 		
 		<cfreturn hostedZones />
+	</cffunction>
+	
+	<cffunction name="getResourceRecords" access="public" returntype="array" output="false">
+		<cfargument name="currUser" type="component" required="true" />
+		<cfargument name="hostedZone" type="component" required="true" />
+		<cfargument name="filter" type="struct" default="#{}#" />
+		
+		<cfset var defaults = {} />
+		<cfset var elements = '' />
+		<cfset var resourceRecord = '' />
+		<cfset var resourceRecords = [] />
+		<cfset var resourceRecordSet = '' />
+		<cfset var parsed = '' />
+		<cfset var results = '' />
+		<cfset var requestDate = '' />
+		<cfset var results = '' />
+		
+		<!--- Expand the with defaults --->
+		<cfset arguments.filter = extend(defaults, arguments.filter) />
+		
+		<cfset requestDate = getDate() />
+		
+		<!--- Retrieve the resource records --->
+		<cfhttp method="get" url="https://#variables.service.hostname#/#variables.service.version#/hostedzone/#listLast(arguments.hostedZone.getHostedZoneID(), '/')#/rrset" result="results">
+			<cfhttpparam type="header" name="Date" value="#requestDate#" />
+			<cfhttpparam type="header" name="X-Amzn-Authorization" value="AWS3-HTTPS AWSAccessKeyId=#variables.awsKeys.accessKeyID#,Algorithm=HmacSHA256,Signature=#variables.hmac.getSignatureAsBase64(requestDate, variables.awsKeys.secretKey, 'hmacSHA256')#" />
+		</cfhttp>
+		
+		<cfif results.status_code neq 200>
+			<cfthrow message="Unable to complete web service call" detail="Server responded with a #results.status_code# status" extendedinfo="#results.filecontent#" />
+		</cfif>
+		
+		<cfset parsed = xmlParse(results.filecontent).xmlRoot />
+		
+		<cfloop array="#parsed.resourceRecordSets.xmlChildren#" index="resourceRecordSet">
+			<cfset resourceRecord = getModel('amazon-aws', 'resourceRecord') />
+			
+			<cfset resourceRecord.setName(resourceRecordSet.name.xmlText) />
+			<cfset resourceRecord.setType(resourceRecordSet.type.xmlText) />
+			<cfset resourceRecord.setTTL(resourceRecordSet.ttl.xmlText) />
+			
+			<cfloop array="#resourceRecordSet.resourceRecords.xmlChildren#" index="element">
+				<cfset resourceRecord.addRecords(element.value.xmlText) />
+			</cfloop>
+			
+			<cfset arrayAppend(resourceRecords, resourceRecord) />
+		</cfloop>
+		
+		<cfreturn resourceRecords />
 	</cffunction>
 	
 	<cffunction name="setHostedZone" access="public" returntype="component" output="false">
