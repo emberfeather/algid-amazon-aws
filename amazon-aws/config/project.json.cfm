@@ -3,7 +3,7 @@
 	},
 	"applicationTransients": {
 	},
-	"aws": {
+	"awsKeys": {
 		"accessKeyID": "",
 		"secretKey": ""
 	},
@@ -21,8 +21,8 @@
 	"requestTransients": {
 	},
 	"services": {
-		"route53" {
-			"url": "https://route53.amazonaws.com",
+		"route53": {
+			"hostname": "route53.amazonaws.com",
 			"version": "2010-10-01"
 		}
 	},
