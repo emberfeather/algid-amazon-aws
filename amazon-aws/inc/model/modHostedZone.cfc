@@ -7,9 +7,27 @@ component extends="algid.inc.resource.base.model" {
 			attribute = 'hostedZoneID'
 		);
 		
+		// Caller Reference
+		addAttribute(
+			attribute = 'callerReference',
+			defaultValue = createUUID()
+		);
+		
+		// ChangeInformation
+		addAttribute(
+			attribute = 'changeInfo',
+			defaultValue = {}
+		);
+		
 		// Comment
 		addAttribute(
 			attribute = 'comment'
+		);
+		
+		// Delegation Set
+		addAttribute(
+			attribute = 'delegationSet',
+			defaultValue = {}
 		);
 		
 		// Name

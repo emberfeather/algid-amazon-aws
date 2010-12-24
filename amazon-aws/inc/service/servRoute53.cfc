@@ -45,10 +45,25 @@
 		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZoneID" type="string" required="true" />
 		
+		<cfset var awsKeys = '' />
+		<cfset var delegationSet = '' />
+		<cfset var hmac = '' />
 		<cfset var hostedZone = '' />
 		<cfset var modelSerial = '' />
+		<cfset var nameServer = '' />
 		<cfset var observer = '' />
+		<cfset var plugin = '' />
+		<cfset var requestDate = '' />
 		<cfset var results = '' />
+		<cfset var service = '' />
+		
+		<cfset plugin = variables.transport.theApplication.managers.plugin.get('amazon-aws') />
+		<cfset hmac = variables.transport.theApplication.managers.singleton.getHMAC() />
+		
+		<cfset requestDate = getDate() />
+		
+		<cfset awsKeys = plugin.getAwsKeys() />
+		<cfset service = plugin.getServices().route53 />
 		
 		<!--- Get the event observer --->
 		<cfset observer = getPluginObserver('amazon-aws', 'route53') />
@@ -58,12 +73,33 @@
 		<!--- Before Get Event --->
 		<cfset observer.beforeHostedZoneGet(variables.transport, arguments.currUser, arguments.hostedZoneID) />
 		
-		<!--- TODO Retrieve the hosted zone information --->
-		
-		<cfif 1 eq 0>
-			<cfset modelSerial = variables.transport.theApplication.factories.transient.getModelSerial(variables.transport) />
+		<cfif len(arguments.hostedZoneID)>
+			<!--- Retrieve the hosted zone --->
+			<cfhttp method="get" url="https://#service.hostname#/#service.version#/hostedzone/#listLast(arguments.hostedZoneID, '/')#" result="results">
+				<cfhttpparam type="header" name="Date" value="#requestDate#" />
+				<cfhttpparam type="header" name="X-Amzn-Authorization" value="AWS3-HTTPS AWSAccessKeyId=#awsKeys.accessKeyID#,Algorithm=HmacSHA256,Signature=#hmac.getSignatureAsBase64(requestDate, awsKeys.secretKey, 'hmacSHA256')#" />
+			</cfhttp>
 			
-			<cfset modelSerial.deserialize(results, hostedZone) />
+			<cfif results.status_code neq 200>
+				<cfthrow message="Unable to complete web service call" detail="Server responded with a #results.status_code# status" extendedinfo="#results.filecontent#" />
+			</cfif>
+			
+			<cfset parsed = xmlParse(results.filecontent).xmlroot />
+			
+			<cfset hostedZone.setHostedZoneID(parsed.hostedZone.id.xmlText) />
+			<cfset hostedZone.setName(parsed.hostedZone.name.xmlText) />
+			<cfset hostedZone.setCallerReference(parsed.hostedZone.callerReference.xmlText) />
+			<cfset hostedZone.setComment(parsed.hostedZone.config.comment.xmlText) />
+			
+			<cfset delegationSet = {
+				'nameServers': []
+			} />
+			
+			<cfloop array="#parsed.delegationSet.nameServers.xmlChildren#" index="nameServer">
+				<cfset arrayAppend(delegationSet.nameServers, nameServer.xmlText) />
+			</cfloop>
+			
+			<cfset hostedZone.setDelegationSet(delegationSet) />
 		</cfif>
 		
 		<!--- After Get Event --->
@@ -98,6 +134,7 @@
 		
 		<!--- Expand the with defaults --->
 		<cfset arguments.filter = extend(defaults, arguments.filter) />
+		
 		<cfset requestDate = getDate() />
 		
 		<cfset awsKeys = plugin.getAwsKeys() />
@@ -118,22 +155,37 @@
 		<cfloop array="#parsed.hostedZones.xmlChildren#" index="hostedZone">
 			<cfset queryAddRow(hostedZones, 1) />
 			
-			<cfset querySetCell(hostedZones, 'hostedZoneID', hostedZone.id) />
-			<cfset querySetCell(hostedZones, 'name', hostedZone.name) />
-			<cfset querySetCell(hostedZones, 'callerReference', hostedZone.callerReference) />
-			<cfset querySetCell(hostedZones, 'comment', hostedZone.config.comment) />
+			<cfset querySetCell(hostedZones, 'hostedZoneID', hostedZone.id.xmlText) />
+			<cfset querySetCell(hostedZones, 'name', hostedZone.name.xmlText) />
+			<cfset querySetCell(hostedZones, 'callerReference', hostedZone.callerReference.xmlText) />
+			<cfset querySetCell(hostedZones, 'comment', hostedZone.config.comment.xmlText) />
 		</cfloop>
 		
 		<cfreturn hostedZones />
 	</cffunction>
 	
-	<cffunction name="setHostedZone" access="public" returntype="void" output="false">
+	<cffunction name="setHostedZone" access="public" returntype="string" output="false">
 		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZone" type="component" required="true" />
 		
+		<cfset var awsKeys = '' />
+		<cfset var changeInfo = '' />
+		<cfset var hmac = '' />
 		<cfset var observer = '' />
+		<cfset var plugin = '' />
+		<cfset var requestDate = '' />
+		<cfset var requestReference = createUUID() />
 		<cfset var requestXml = '' />
 		<cfset var results = '' />
+		<cfset var service = '' />
+		
+		<cfset plugin = variables.transport.theApplication.managers.plugin.get('amazon-aws') />
+		<cfset hmac = variables.transport.theApplication.managers.singleton.getHMAC() />
+		
+		<cfset requestDate = getDate() />
+		
+		<cfset awsKeys = plugin.getAwsKeys() />
+		<cfset service = plugin.getServices().route53 />
 		
 		<!--- Get the event observer --->
 		<cfset observer = getPluginObserver('amazon-aws', 'route53') />
@@ -141,42 +193,67 @@
 		<!--- Before Save Event --->
 		<cfset observer.beforeHostedZoneSave(variables.transport, arguments.currUser, arguments.hostedZone) />
 		
-		<cfif arguments.hostedZone.getHostedZoneID() eq ''>
-			<!--- Before Create Event --->
-			<cfset observer.beforeHostedZoneCreate(variables.transport, arguments.currUser, arguments.hostedZone) />
-			<cfsavecontent variable="requestXml">
-				<cfoutput>
-					<?xml version="1.0" encoding="UTF-8"?>
-					<CreateHostedZoneRequest xmlns="https://route53.amazonaws.com/doc/2010-10-01/">
-						<Name>#arguments.hostedZone.getName()#</Name>
-						<CallerReference>#createUUID()#</CallerReference>
-						
-						<HostedZoneConfig>
-							<Comment>#arguments.hostedZone.getComment()#</Comment>
-						</HostedZoneConfig>
-					</CreateHostedZoneRequest>
-				</cfoutput>
-			</cfsavecontent>
-			
-			<!--- TODO Remove --->
-			<cfdump var="#requestXML#" />
-			<cfabort />
-			
-			<!--- TODO Send Create Request --->
-			
-			<!--- After Create Event --->
-			<cfset observer.afterHostedZoneCreate(variables.transport, arguments.currUser, arguments.hostedZone) />
-		<cfelse>
-			<!--- Before Update Event --->
-			<cfset observer.beforeHostedZoneUpdate(variables.transport, arguments.currUser, arguments.hostedZone) />
-			
-			<!--- TODO Send Update Request --->
-			
-			<!--- After Update Event --->
-			<cfset observer.afterHostedZoneUpdate(variables.transport, arguments.currUser, arguments.hostedZone) />
+		<!--- Before Create Event --->
+		<cfset observer.beforeHostedZoneCreate(variables.transport, arguments.currUser, arguments.hostedZone) />
+		
+		<!--- Create XMl request --->
+		<cfsavecontent variable="requestXml" trim="true">
+			<cfoutput>
+				<?xml version="1.0" encoding="UTF-8"?>
+				<CreateHostedZoneRequest xmlns="https://#service.hostname#/doc/#service.version#/">
+					<Name>#arguments.hostedZone.getName()#</Name>
+					<CallerReference>#arguments.hostedZone.getCallerReference()#</CallerReference>
+					
+					<HostedZoneConfig>
+						<Comment>#arguments.hostedZone.getComment()#</Comment>
+					</HostedZoneConfig>
+				</CreateHostedZoneRequest>
+			</cfoutput>
+		</cfsavecontent>
+		
+		<!--- Send Create Request --->
+		<cfhttp method="post" url="https://#service.hostname#/#service.version#/hostedzone" result="results">
+			<cfhttpparam type="header" name="Date" value="#requestDate#" />
+			<cfhttpparam type="header" name="X-Amzn-Authorization" value="AWS3-HTTPS AWSAccessKeyId=#awsKeys.accessKeyID#,Algorithm=HmacSHA256,Signature=#hmac.getSignatureAsBase64(requestDate, awsKeys.secretKey, 'hmacSHA256')#" />
+			<cfhttpparam type="body" value="#requestXml#" />
+		</cfhttp>
+		
+		<cfif results.status_code neq '201'>
+			<cfthrow message="Unable to complete web service call" detail="Server responded with a #results.status_code# status" extendedinfo="#results.filecontent#" />
 		</cfif>
+		
+		<!--- Pull the data in from the response --->
+		<cfset parsed = xmlParse(results.filecontent).xmlroot />
+		
+		<cfset hostedZone.setHostedZoneID(parsed.hostedZone.id.xmlText) />
+		<cfset hostedZone.setName(parsed.hostedZone.name.xmlText) />
+		<cfset hostedZone.setCallerReference(parsed.hostedZone.callerReference.xmlText) />
+		<cfset hostedZone.setComment(parsed.hostedZone.config.comment.xmlText) />
+		
+		<cfset changeInfo = {
+			'changeInfoID': parsed.changeInfo.id.xmlText,
+			'status': parsed.changeInfo.status.xmlText,
+			'submittedAt': parsed.changeInfo.submittedAt.xmlText
+		} />
+		
+		<cfset hostedZone.setChangeInfo(changeInfo) />
+		
+		<cfset delegationSet = {
+			'nameServers': []
+		} />
+		
+		<cfloop array="#parsed.delegationSet.nameServers.xmlChildren#" index="nameServer">
+			<cfset arrayAppend(delegationSet.nameServers, nameServer.xmlText) />
+		</cfloop>
+		
+		<cfset hostedZone.setDelegationSet(delegationSet) />
+		
+		<!--- After Create Event --->
+		<cfset observer.afterHostedZoneCreate(variables.transport, arguments.currUser, arguments.hostedZone) />
 		
 		<!--- After Save Event --->
 		<cfset observer.afterHostedZoneSave(variables.transport, arguments.currUser, arguments.hostedZone) />
+		
+		<cfreturn requestReference />
 	</cffunction>
 </cfcomponent>

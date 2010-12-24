@@ -1,4 +1,47 @@
 <cfcomponent extends="algid.inc.resource.base.view" output="false">
+	<cffunction name="addHostedZone" access="public" returntype="string" output="false">
+		<cfargument name="hostedZone" type="component" required="true" />
+		<cfargument name="request" type="struct" default="#{}#" />
+		
+		<cfset var i18n = '' />
+		<cfset var theForm = '' />
+		<cfset var theURL = '' />
+		
+		<cfset i18n = variables.transport.theApplication.managers.singleton.getI18N() />
+		<cfset theURL = variables.transport.theRequest.managers.singleton.getUrl() />
+		<cfset theForm = variables.transport.theApplication.factories.transient.getFormStandard('hostedZone', i18n) />
+		
+		<!--- Add the resource bundle for the view --->
+		<cfset theForm.addBundle('plugins/amazon-aws/i18n/inc/view', 'viewRoute53') />
+		
+		<cfset theForm.addElement('text', {
+				name = "name",
+				label = "hostedZone",
+				value = ( structKeyExists(arguments.request, 'name') ? arguments.request.name : arguments.hostedZone.getName() )
+			}) />
+		
+		<cfset theForm.addElement('text', {
+				name = "comment",
+				label = "comment",
+				value = ( structKeyExists(arguments.request, 'comment') ? arguments.request.comment : arguments.hostedZone.getComment() )
+			}) />
+		
+		<cfreturn theForm.toHTML(theURL.get()) />
+	</cffunction>
+	
+	<cffunction name="detailHostedZone" access="public" returntype="string" output="false">
+		<cfargument name="hostedZone" type="component" required="true" />
+		
+		<cfset var html = '' />
+		
+		<!--- TODO Make a nice display of the information for the zone --->
+		<cfsavecontent variable="html">
+			<cfset arguments.hostedZone.print() />
+		</cfsavecontent>
+		
+		<cfreturn html />
+	</cffunction>
+	
 	<cffunction name="filterActive" access="public" returntype="string" output="false">
 		<cfargument name="filter" type="struct" default="#{}#" />
 		
@@ -47,8 +90,12 @@
 		<cfset datagrid.addBundle('plugins/amazon-aws/i18n/inc/view', 'viewRoute53') />
 		
 		<cfset datagrid.addColumn({
-			key = 'hostedZone',
-			label = 'hostedZone'
+			key = 'name',
+			label = 'hostedZone',
+			link = {
+				'hostedZoneID' = 'hostedZoneID',
+				'_base' = '/admin/aws/route53/hostedZone'
+			}
 		}) />
 		
 		<cfset datagrid.addColumn({
@@ -56,12 +103,12 @@
 			value = [ 'delete', 'update' ],
 			link = [
 				{
-					'theme' = 'themeID',
-					'_base' = '/admin/content/theme/archive'
+					'hostedZoneID' = 'hostedZoneID',
+					'_base' = '/admin/aws/route53/hostedZone/delete'
 				},
 				{
-					'theme' = 'themeID',
-					'_base' = '/admin/content/theme/update'
+					'hostedZoneID' = 'hostedZoneID',
+					'_base' = '/admin/aws/route53/hostedZone/edit'
 				}
 			],
 			linkClass = [ 'delete', '' ],
