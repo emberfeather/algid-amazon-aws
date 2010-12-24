@@ -100,18 +100,12 @@
 		
 		<cfset datagrid.addColumn({
 			class = 'phantom align-right',
-			value = [ 'delete', 'update' ],
-			link = [
-				{
-					'hostedZoneID' = 'hostedZoneID',
-					'_base' = '/admin/aws/route53/hostedZone/delete'
-				},
-				{
-					'hostedZoneID' = 'hostedZoneID',
-					'_base' = '/admin/aws/route53/hostedZone/edit'
-				}
-			],
-			linkClass = [ 'delete', '' ],
+			value = 'delete',
+			link = {
+				'hostedZoneID' = 'hostedZoneID',
+				'_base' = '/admin/aws/route53/hostedZone/delete'
+			},
+			linkClass = 'delete',
 			title = 'hostedZone'
 		}) />
 		
