@@ -63,6 +63,60 @@
 		<cfreturn change />
 	</cffunction>
 	
+	<cffunction name="detectChangeResourceRecords" access="public" returntype="component" output="false">
+		<cfargument name="currUser" type="component" required="true" />
+		<cfargument name="hostedZone" type="component" required="true" />
+		<cfargument name="resourceRecords" type="array" required="true" />
+		
+		<cfset var changeBatch = '' />
+		<cfset var isFound = '' />
+		<cfset var originResourceRecords = '' />
+		<cfset var i = '' />
+		<cfset var j = '' />
+		
+		<cfset changeBatch = getModel('amazon-aws', 'changeBatch') />
+		
+		<cfset originResourceRecords = getResourceRecords(arguments.currUser, arguments.hostedZone) />
+		
+		<!--- Check if there are any origin records that were not matching in the new records --->
+		<cfloop array="#originResourceRecords#" index="i">
+			<cfset isFound = false />
+			
+			<cfloop array="#arguments.resourceRecords#" index="j">
+				<!--- TODO Use an equality match --->
+				<cfif 1 eq 0>
+					<cfset isFound = true />
+					
+					<cfbreak />
+				</cfif>
+			</cfloop>
+			
+			<cfif isFound>
+				<cfset changeBatch.addResourceRecords('DELETE', i) />
+			</cfif>
+		</cfloop>
+		
+		<!--- Check if there are any new records that were not matching the origin records --->
+		<cfloop array="#arguments.resourceRecords#" index="i">
+			<cfset isFound = false />
+			
+			<cfloop array="#originResourceRecords#" index="j">
+				<!--- TODO Use an equality match --->
+				<cfif 1 eq 1>
+					<cfset isFound = true />
+					
+					<cfbreak />
+				</cfif>
+			</cfloop>
+			
+			<cfif isFound>
+				<cfset changeBatch.addResourceRecords('CREATE', i) />
+			</cfif>
+		</cfloop>
+		
+		<cfreturn changeBatch />
+	</cffunction>
+	
 	<cffunction name="getChange" access="public" returntype="component" output="false">
 		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="changeID" type="string" required="true" />
@@ -99,8 +153,8 @@
 		<cfset parsed = xmlParse(results.filecontent).xmlroot />
 		
 		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
-		<cfset change.setStatus(parsed.status.id.xmlText) />
-		<cfset change.setSubmittedAt(parsed.submittedAt.id.xmlText) />
+		<cfset change.setStatus(parsed.changeInfo.status.xmlText) />
+		<cfset change.setSubmittedAt(parsed.changeInfo.submittedAt.xmlText) />
 		
 		<!--- After Get Event --->
 		<cfset observer.afterChangeGet(variables.transport, arguments.currUser, arguments.changeID) />
@@ -176,7 +230,9 @@
 		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="filter" type="struct" default="#{}#" />
 		
-		<cfset var defaults = {} />
+		<cfset var defaults = {
+			'maxItems': 100
+		} />
 		<cfset var elements = '' />
 		<cfset var hostedZone = '' />
 		<cfset var hostedZones = '' />
@@ -196,6 +252,7 @@
 		<cfhttp method="get" url="https://#variables.service.hostname#/#variables.service.version#/hostedzone" result="results">
 			<cfhttpparam type="header" name="Date" value="#requestDate#" />
 			<cfhttpparam type="header" name="X-Amzn-Authorization" value="AWS3-HTTPS AWSAccessKeyId=#variables.awsKeys.accessKeyID#,Algorithm=HmacSHA256,Signature=#variables.hmac.getSignatureAsBase64(requestDate, variables.awsKeys.secretKey, 'hmacSHA256')#" />
+			<cfhttpparam type="url" name="maxItems" value="#arguments.filter.maxItems#" />
 		</cfhttp>
 		
 		<cfif results.status_code neq 200>
@@ -221,12 +278,17 @@
 		<cfargument name="hostedZone" type="component" required="true" />
 		<cfargument name="filter" type="struct" default="#{}#" />
 		
-		<cfset var defaults = {} />
+		<cfset var defaults = {
+			'name': '',
+			'type': '',
+			'maxItems': 100
+		} />
 		<cfset var elements = '' />
 		<cfset var resourceRecord = '' />
 		<cfset var resourceRecords = [] />
 		<cfset var resourceRecordSet = '' />
 		<cfset var parsed = '' />
+		<cfset var queryString = '' />
 		<cfset var results = '' />
 		<cfset var requestDate = '' />
 		<cfset var results = '' />
@@ -240,6 +302,16 @@
 		<cfhttp method="get" url="https://#variables.service.hostname#/#variables.service.version#/hostedzone/#listLast(arguments.hostedZone.getHostedZoneID(), '/')#/rrset" result="results">
 			<cfhttpparam type="header" name="Date" value="#requestDate#" />
 			<cfhttpparam type="header" name="X-Amzn-Authorization" value="AWS3-HTTPS AWSAccessKeyId=#variables.awsKeys.accessKeyID#,Algorithm=HmacSHA256,Signature=#variables.hmac.getSignatureAsBase64(requestDate, variables.awsKeys.secretKey, 'hmacSHA256')#" />
+			<cfhttpparam type="url" name="maxitems" value="#arguments.filter.maxItems#" />
+			
+			<cfif arguments.filter.name neq ''>
+				<cfhttpparam type="url" name="name" value="#arguments.filter.name#" />
+				
+				<!--- Type only works if you also declare a name --->
+				<cfif arguments.filter.type neq ''>
+					<cfhttpparam type="url" name="type" value="#arguments.filter.type#" />
+				</cfif>
+			</cfif>
 		</cfhttp>
 		
 		<cfif results.status_code neq 200>
@@ -347,6 +419,103 @@
 		
 		<!--- After Save Event --->
 		<cfset observer.afterHostedZoneSave(variables.transport, arguments.currUser, arguments.hostedZone) />
+		
+		<cfreturn change />
+	</cffunction>
+	
+	<cffunction name="setResourceRecords" access="public" returntype="component" output="false">
+		<cfargument name="currUser" type="component" required="true" />
+		<cfargument name="hostedZone" type="component" required="true" />
+		<cfargument name="changeBatch" type="component" required="true" />
+		
+		<cfset var change = '' />
+		<cfset var changes = '' />
+		<cfset var i = '' />
+		<cfset var j = '' />
+		<cfset var observer = '' />
+		<cfset var parsed = '' />
+		<cfset var requestDate = '' />
+		<cfset var requestReference = createUUID() />
+		<cfset var requestXml = '' />
+		<cfset var records = '' />
+		<cfset var results = '' />
+		
+		<cfset requestDate = getDate() />
+		
+		<!--- Get the event observer --->
+		<cfset observer = getPluginObserver('amazon-aws', 'route53') />
+		
+		<!--- Before Save Event --->
+		<cfset observer.beforeResourceRecordSave(variables.transport, arguments.currUser, arguments.hostedZone, arguments.changeBatch) />
+		
+		<cfset changes = arguments.changeBatch.getResourceRecords() />
+		
+		<!--- Make sure we have something to change --->
+		<cfif not arrayLen(changes)>
+			<cfthrow type="validation" message="No changes to submit" detail="There were no changes from the existing resource records" />
+		</cfif>
+		
+		<!--- Create XMl request --->
+		<cfsavecontent variable="requestXml" trim="true">
+			<cfoutput>
+				<?xml version="1.0" encoding="UTF-8"?>
+				<ChangeResourceRecordSetsRequest xmlns="https://#variables.service.hostname#/doc/#variables.service.version#/">
+					<ChangeBatch>
+						<Comment>
+							<![CDATA[
+								#arguments.changeBatch.getComment()#
+							]]>
+						</Comment>
+						<Changes>
+							<cfloop array="#changes#" index="i">
+								<Change>
+									<Action>#i.action#</Action>
+									<ResourceRecordSet>
+										<Name>#i.resourceRecord.getName()#</Name>
+										<Type>#i.resourceRecord.getType()#</Type>
+										<TTL>#i.resourceRecord.getTTL()#</TTL>
+										<ResourceRecords>
+											<cfset records = i.resourceRecord.getRecords() />
+											
+											<cfloop array="#records#" index="j">
+												<ResourceRecord>
+													<Value>#j#</Value>
+												</ResourceRecord>
+											</cfloop>
+										</ResourceRecords>
+									</ResourceRecordSet>
+								</Change>
+							</cfloop>
+						</Changes>
+					</ChangeBatch>
+				</ChangeResourceRecordSetsRequest>
+			</cfoutput>
+		</cfsavecontent>
+		
+		<!--- Send Batch Request --->
+		<cfhttp method="post" url="https://#variables.service.hostname#/#variables.service.version#/hostedzone/#listLast(arguments.hostedZone.getHostedZoneID(), '/')#/rrset" result="results">
+			<cfhttpparam type="header" name="Date" value="#requestDate#" />
+			<cfhttpparam type="header" name="X-Amzn-Authorization" value="AWS3-HTTPS AWSAccessKeyId=#variables.awsKeys.accessKeyID#,Algorithm=HmacSHA256,Signature=#variables.hmac.getSignatureAsBase64(requestDate, variables.awsKeys.secretKey, 'hmacSHA256')#" />
+			<cfhttpparam type="body" value="#requestXml#" />
+		</cfhttp>
+		
+		<cfif results.status_code neq '200'>
+			<cfthrow message="Unable to complete web service call" detail="Server responded with a #results.status_code# status" extendedinfo="#results.filecontent#" />
+		</cfif>
+		
+		<!--- Pull the data in from the response --->
+		<cfset parsed = xmlParse(results.filecontent).xmlroot />
+		
+		<cfset change = getModel('amazon-aws', 'change') />
+		
+		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
+		<cfset change.setStatus(parsed.changeInfo.status.xmlText) />
+		<cfset change.setSubmittedAt(parsed.changeInfo.submittedAt.xmlText) />
+		
+		<cfset hostedZone.setChange(change) />
+		
+		<!--- After Save Event --->
+		<cfset observer.afterResourceRecordSave(variables.transport, arguments.currUser, arguments.hostedZone, arguments.changeBatch) />
 		
 		<cfreturn change />
 	</cffunction>
