@@ -19,12 +19,27 @@
 			
 			<cfset j = mid(i, match.pos[2], match.len[2]) />
 			
-			<cfset resourceRecord.setName(form['resourceRecord_#j#_name']) />
-			<cfset resourceRecord.setType(form['resourceRecord_#j#_type']) />
-			<cfset resourceRecord.setTTL(form['resourceRecord_#j#_ttl']) />
-			<cfset resourceRecord.addRecords(form['resourceRecord_#j#_value']) />
+			<!--- Make sure that the same name/type gets the records added to existing records --->
+			<cfset isFound = false />
 			
-			<cfset arrayAppend(changedResourceRecords, resourceRecord) />
+			<cfloop array="#changedResourceRecords#" index="k">
+				<cfif k.getName() eq form['resourceRecord_#j#_name'] and k.getType() eq form['resourceRecord_#j#_type']>
+					<cfset isFound = true />
+					
+					<cfset k.addRecords(form['resourceRecord_#j#_value']) />
+					
+					<cfbreak />
+				</cfif>
+			</cfloop>
+			
+			<cfif not isFound>
+				<cfset resourceRecord.setName(form['resourceRecord_#j#_name']) />
+				<cfset resourceRecord.setType(form['resourceRecord_#j#_type']) />
+				<cfset resourceRecord.setTTL(form['resourceRecord_#j#_ttl']) />
+				<cfset resourceRecord.addRecords(form['resourceRecord_#j#_value']) />
+				
+				<cfset arrayAppend(changedResourceRecords, resourceRecord) />
+			</cfif>
 		</cfif>
 	</cfloop>
 	
@@ -44,7 +59,7 @@
 	<!--- Redirect --->
 	<cfset theURL.setRedirect('_base', '/admin/aws/route53/change') />
 	<cfset theURL.setRedirect('changeID', change.getChangeID()) />
-	<cfset theURL.removeRedirect('hostedZone') />
+	<cfset theURL.removeRedirect('hostedZoneID') />
 	
 	<cfset theURL.redirectRedirect() />
 </cfif>
