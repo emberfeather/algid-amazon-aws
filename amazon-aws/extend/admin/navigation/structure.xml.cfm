@@ -9,9 +9,9 @@
 					<delete position="action"/>
 					<list position="action"/>
 					
-					<resourceRecord position="main">
-						<list position="action"/>
-						<edit position="action"/>
+					<resourceRecord position="main" vars="hostedZoneID">
+						<list position="action" vars="hostedZoneID"/>
+						<edit position="action" vars="hostedZoneID"/>
 					</resourceRecord>
 				</hostedZone>
 			</route53>
