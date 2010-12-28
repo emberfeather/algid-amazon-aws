@@ -108,16 +108,16 @@
 									<cfif resourceRecord.isEditable()>
 										<tr>
 											<td class="col name column-0">
-												<input type="text" name="resourceRecord_#counter#_name" value="#(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : resourceRecord.getName())#" style="width: 200px; min-width: 10px;" />
+												<input type="text" name="resourceRecord_#counter#_name" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : resourceRecord.getName())#" style="width: 200px; min-width: 10px;" />
 											</td>
 											<td class="col ttl column-1">
-												<input type="text" name="resourceRecord_#counter#_ttl" value="#(structKeyExists(arguments.request, 'resourceRecord_#counter#_ttl') ? arguments.request['resourceRecord_#counter#_ttl'] : resourceRecord.getTTL())#" style="width: 50px; min-width: 10px;" />
+												<input type="text" name="resourceRecord_#counter#_ttl" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_ttl') ? arguments.request['resourceRecord_#counter#_ttl'] : resourceRecord.getTTL())#" style="width: 50px; min-width: 10px;" />
 											</td>
 											<td class="col type column-2">
 												#formSelect('resourceRecord_#counter#_type', options, (structKeyExists(arguments.request, 'resourceRecord_#counter#_type') ? arguments.request['resourceRecord_#counter#_type'] : resourceRecord.getType()))#
 											</td>
 											<td class="col value column-3">
-												<input type="text" name="resourceRecord_#counter#_value" value="#(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : record)#" style="width: 450px; min-width: 10px;" />
+												<input type="text" name="resourceRecord_#counter#_value" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : record)#" style="width: 450px; min-width: 10px;" />
 											</td>
 										</tr>
 									<cfelse>
@@ -145,16 +145,16 @@
 							<cfloop from="1" to="10" index="i">
 								<tr>
 									<td class="col name column-0">
-										<input type="text" name="resourceRecord_#counter#_name" value="#(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : '')#" style="width: 200px; min-width: 10px;" />
+										<input type="text" name="resourceRecord_#counter#_name" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : '')#" style="width: 200px; min-width: 10px;" />
 									</td>
 									<td class="col ttl column-1">
-										<input type="text" name="resourceRecord_#counter#_ttl" value="#(structKeyExists(arguments.request, 'resourceRecord_#counter#_ttl') ? arguments.request['resourceRecord_#counter#_ttl'] : '')#" style="width: 50px; min-width: 10px;" />
+										<input type="text" name="resourceRecord_#counter#_ttl" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_ttl') ? arguments.request['resourceRecord_#counter#_ttl'] : '')#" style="width: 50px; min-width: 10px;" />
 									</td>
 									<td class="col type column-2">
 										#formSelect('resourceRecord_#counter#_type', options, (structKeyExists(arguments.request, 'resourceRecord_#counter#_type') ? arguments.request['resourceRecord_#counter#_type'] : ''))#
 									</td>
 									<td class="col value column-3">
-										<input type="text" name="resourceRecord_#counter#_value" value="#(structKeyExists(arguments.request, 'resourceRecord_#counter#_value') ? arguments.request['resourceRecord_#counter#_value'] : '')#" style="width: 450px; min-width: 10px;" />
+										<input type="text" name="resourceRecord_#counter#_value" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_value') ? arguments.request['resourceRecord_#counter#_value'] : '')#" style="width: 450px; min-width: 10px;" />
 									</td>
 								</tr>
 								
