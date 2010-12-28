@@ -9,7 +9,7 @@
 <cfif cgi.request_method eq 'post'>
 	<!--- Process the form submission --->
 	
-	<cfset resourceRecords = [] />
+	<cfset changedResourceRecords = [] />
 	
 	<cfloop list="#form.fieldnames#" index="i">
 		<cfset match = reFindNoCase('resourceRecord_([0-9]*)_value', i, 1, true) />
@@ -24,12 +24,12 @@
 			<cfset resourceRecord.setTTL(form['resourceRecord_#j#_ttl']) />
 			<cfset resourceRecord.addRecords(form['resourceRecord_#j#_value']) />
 			
-			<cfset arrayAppend(resourceRecords, resourceRecord) />
+			<cfset arrayAppend(changedResourceRecords, resourceRecord) />
 		</cfif>
 	</cfloop>
 	
 	<!--- Determine the change batch --->
-	<cfset changeBatch = servRoute53.detectChangeResourceRecords(user, hostedZone, resourceRecords) />
+	<cfset changeBatch = servRoute53.detectChangeResourceRecords(user, hostedZone, changedResourceRecords) />
 	
 	<!--- Add change batch comment --->
 	<cfset changeBatch.setComment('Adding the A record for the PreHealth Facts domain.') />
@@ -43,7 +43,7 @@
 	
 	<!--- Redirect --->
 	<cfset theURL.setRedirect('_base', '/admin/aws/route53/change') />
-	<cfset theURL.setRedirect('change', change.getChangeID()) />
+	<cfset theURL.setRedirect('changeID', change.getChangeID()) />
 	<cfset theURL.removeRedirect('hostedZone') />
 	
 	<cfset theURL.redirectRedirect() />

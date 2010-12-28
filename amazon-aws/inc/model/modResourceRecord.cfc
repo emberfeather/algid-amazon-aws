@@ -28,4 +28,26 @@ component extends="algid.inc.resource.base.model" {
 		
 		return this;
 	}
+	
+	public boolean function isEditable() {
+		var type = this.getType();
+		
+		switch(type) {
+			case 'SOA':
+			case 'NS':
+				return false;
+				
+				break;
+		}
+		
+		return true;
+	}
+	
+	public numeric function _compareTo(required component obj) {
+		if(this.get__instance().equals(arguments.obj.get__instance())) {
+			return 0;
+		}
+		
+		return -1;
+	}
 }

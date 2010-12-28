@@ -9,7 +9,8 @@ component extends="algid.inc.resource.base.model" {
 		
 		// Resource Records
 		addAttribute(
-			attribute = 'resourceRecords'
+			attribute = 'resourceRecords',
+			defaultValue = []
 		);
 		
 		// Set the bundle information for translation

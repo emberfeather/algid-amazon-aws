@@ -53,7 +53,7 @@
 		
 		<cfset change = getModel('amazon-aws', 'change') />
 		
-		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
+		<cfset change.setChangeID(parsed.changeInfo.id.xmlText) />
 		<cfset change.setStatus(parsed.status.id.xmlText) />
 		<cfset change.setSubmittedAt(parsed.submittedAt.id.xmlText) />
 		
@@ -69,7 +69,7 @@
 		<cfargument name="resourceRecords" type="array" required="true" />
 		
 		<cfset var changeBatch = '' />
-		<cfset var isFound = '' />
+		<cfset var isMatch = '' />
 		<cfset var originResourceRecords = '' />
 		<cfset var i = '' />
 		<cfset var j = '' />
@@ -80,36 +80,39 @@
 		
 		<!--- Check if there are any origin records that were not matching in the new records --->
 		<cfloop array="#originResourceRecords#" index="i">
-			<cfset isFound = false />
+			<cfset isMatch = false />
 			
-			<cfloop array="#arguments.resourceRecords#" index="j">
-				<!--- TODO Use an equality match --->
-				<cfif 1 eq 0>
-					<cfset isFound = true />
-					
-					<cfbreak />
-				</cfif>
-			</cfloop>
+			<cfif not i.isEditable()>
+				<!--- Don't try to match non-editable types --->
+				<cfset isMatch = true />
+			<cfelse>
+				<cfloop array="#arguments.resourceRecords#" index="j">
+					<cfif i._compareTo(j) eq 0>
+						<cfset isMatch = true />
+						
+						<cfbreak />
+					</cfif>
+				</cfloop>
+			</cfif>
 			
-			<cfif isFound>
+			<cfif !isMatch>
 				<cfset changeBatch.addResourceRecords('DELETE', i) />
 			</cfif>
 		</cfloop>
 		
 		<!--- Check if there are any new records that were not matching the origin records --->
 		<cfloop array="#arguments.resourceRecords#" index="i">
-			<cfset isFound = false />
+			<cfset isMatch = false />
 			
 			<cfloop array="#originResourceRecords#" index="j">
-				<!--- TODO Use an equality match --->
-				<cfif 1 eq 1>
-					<cfset isFound = true />
+				<cfif i._compareTo(j) eq 0>
+					<cfset isMatch = true />
 					
 					<cfbreak />
 				</cfif>
 			</cfloop>
 			
-			<cfif isFound>
+			<cfif !isMatch>
 				<cfset changeBatch.addResourceRecords('CREATE', i) />
 			</cfif>
 		</cfloop>
@@ -152,7 +155,7 @@
 		
 		<cfset parsed = xmlParse(results.filecontent).xmlroot />
 		
-		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
+		<cfset change.setChangeID(parsed.changeInfo.id.xmlText) />
 		<cfset change.setStatus(parsed.changeInfo.status.xmlText) />
 		<cfset change.setSubmittedAt(parsed.changeInfo.submittedAt.xmlText) />
 		
@@ -398,7 +401,7 @@
 		
 		<cfset change = getModel('amazon-aws', 'change') />
 		
-		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
+		<cfset change.setChangeID(parsed.changeInfo.id.xmlText) />
 		<cfset change.setStatus(parsed.status.id.xmlText) />
 		<cfset change.setSubmittedAt(parsed.submittedAt.id.xmlText) />
 		
@@ -508,7 +511,7 @@
 		
 		<cfset change = getModel('amazon-aws', 'change') />
 		
-		<cfset change.setChangeInfoID(parsed.changeInfo.id.xmlText) />
+		<cfset change.setChangeID(parsed.changeInfo.id.xmlText) />
 		<cfset change.setStatus(parsed.changeInfo.status.xmlText) />
 		<cfset change.setSubmittedAt(parsed.changeInfo.submittedAt.xmlText) />
 		
