@@ -60,6 +60,7 @@
 		<cfargument name="request" type="struct" default="#{}#" />
 		
 		<cfset var counter = '' />
+		<cfset var i = '' />
 		<cfset var isEditable = '' />
 		<cfset var formatted = '' />
 		<cfset var options = '' />
@@ -68,7 +69,6 @@
 		<cfset var resourceRecord = '' />
 		<cfset var theURL = '' />
 		
-		<cfset i18n = variables.transport.theApplication.managers.singleton.getI18N() />
 		<cfset theURL = variables.transport.theRequest.managers.singleton.getUrl() />
 		
 		<cfset options = variables.transport.theApplication.factories.transient.getOptions() />

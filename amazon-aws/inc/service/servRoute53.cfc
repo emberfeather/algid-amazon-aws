@@ -286,7 +286,7 @@
 			'type': '',
 			'maxItems': 100
 		} />
-		<cfset var elements = '' />
+		<cfset var element = '' />
 		<cfset var resourceRecord = '' />
 		<cfset var resourceRecords = [] />
 		<cfset var resourceRecordSet = '' />
