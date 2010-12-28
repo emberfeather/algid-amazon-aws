@@ -13,7 +13,7 @@
 	// Redirect
 	theURL.setRedirect('_base', '/admin/aws/route53/change');
 	theURL.setRedirect('changeID', change.getChangeID());
-	theURL.removeRedirect('hostedZone');
+	theURL.removeRedirect('hostedZoneID');
 	
 	theURL.redirectRedirect();
 </cfscript>
