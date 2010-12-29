@@ -15,6 +15,7 @@
 	"key": "amazon-aws",
 	"plugin": "Amazon AWS",
 	"prerequisites": {
+		"algid": "0.1.3"
 	},
 	"requestSingletons": {
 	},
