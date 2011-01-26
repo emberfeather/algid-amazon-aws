@@ -7,9 +7,6 @@
 	
 	change = servRoute53.deleteHostedZone(user, hostedZone);
 	
-	// Add a success message
-	transport.theSession.managers.singleton.getSuccess().addMessages('The hosted zone ''' & hostedZone.getName() & ''' was successfully submitted for deletion.');
-	
 	// Redirect
 	theURL.setRedirect('_base', '/admin/aws/route53/change');
 	theURL.setRedirect('changeID', change.getChangeID());

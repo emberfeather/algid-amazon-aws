@@ -52,10 +52,6 @@
 	<!--- Submit the changes as a batch --->
 	<cfset change = servRoute53.setResourceRecords(user, hostedZone, changeBatch) />
 	
-	<!--- Add a success message --->
-	<!--- TODO use i18n --->
-	<cfset session.managers.singleton.getSuccess().addMessages('The resource record changes were successfully submitted.') />
-	
 	<!--- Redirect --->
 	<cfset theURL.setRedirect('_base', '/admin/aws/route53/change') />
 	<cfset theURL.setRedirect('changeID', change.getChangeID()) />

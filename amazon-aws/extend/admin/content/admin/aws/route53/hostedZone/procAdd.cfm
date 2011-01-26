@@ -11,9 +11,6 @@
 		
 		change = servRoute53.setHostedZone(user, hostedZone);
 		
-		// Add a success message
-		transport.theSession.managers.singleton.getSuccess().addMessages('The hosted zone ''' & hostedZone.getName() & ''' was successfully saved.');
-		
 		// Redirect
 		theURL.setRedirect('_base', '/admin/aws/route53/change');
 		theURL.setRedirect('changeID', change.getChangeID());
