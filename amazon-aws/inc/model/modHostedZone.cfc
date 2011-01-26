@@ -3,39 +3,39 @@ component extends="algid.inc.resource.base.model" {
 		super.init(arguments.i18n, arguments.locale);
 		
 		// Hosted Zone ID
-		addAttribute(
+		add__attribute(
 			attribute = 'hostedZoneID'
 		);
 		
 		// Caller Reference
-		addAttribute(
+		add__attribute(
 			attribute = 'callerReference',
 			defaultValue = createUUID()
 		);
 		
 		// Change Information
-		addAttribute(
+		add__attribute(
 			attribute = 'change'
 		);
 		
 		// Comment
-		addAttribute(
+		add__attribute(
 			attribute = 'comment'
 		);
 		
 		// Delegation Set
-		addAttribute(
+		add__attribute(
 			attribute = 'delegationSet',
 			defaultValue = {}
 		);
 		
 		// Name
-		addAttribute(
+		add__attribute(
 			attribute = 'name'
 		);
 		
 		// Set the bundle information for translation
-		addBundle('plugins/amazon-aws/i18n/inc/model', 'modHostedZone');
+		add__bundle('plugins/amazon-aws/i18n/inc/model', 'modHostedZone');
 		
 		return this;
 	}

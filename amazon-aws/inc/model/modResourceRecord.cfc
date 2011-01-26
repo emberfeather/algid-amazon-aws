@@ -3,28 +3,28 @@ component extends="algid.inc.resource.base.model" {
 		super.init(arguments.i18n, arguments.locale);
 		
 		// Name
-		addAttribute(
+		add__attribute(
 			attribute = 'Name'
 		);
 		
 		// Type
-		addAttribute(
+		add__attribute(
 			attribute = 'type'
 		);
 		
 		// TTL
-		addAttribute(
+		add__attribute(
 			attribute = 'ttl'
 		);
 		
 		// Records
-		addAttribute(
+		add__attribute(
 			attribute = 'records',
 			defaultValue = []
 		);
 		
 		// Set the bundle information for translation
-		addBundle('plugins/amazon-aws/i18n/inc/model', 'modResourceRecord');
+		add__bundle('plugins/amazon-aws/i18n/inc/model', 'modResourceRecord');
 		
 		return this;
 	}

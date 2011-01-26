@@ -3,22 +3,22 @@ component extends="algid.inc.resource.base.model" {
 		super.init(arguments.i18n, arguments.locale);
 		
 		// Change ID
-		addAttribute(
+		add__attribute(
 			attribute = 'changeID'
 		);
 		
 		// Status
-		addAttribute(
+		add__attribute(
 			attribute = 'status'
 		);
 		
 		// Submitted At
-		addAttribute(
+		add__attribute(
 			attribute = 'submittedAt'
 		);
 		
 		// Set the bundle information for translation
-		addBundle('plugins/amazon-aws/i18n/inc/model', 'modChange');
+		add__bundle('plugins/amazon-aws/i18n/inc/model', 'modChange');
 		
 		return this;
 	}
