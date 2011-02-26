@@ -1,8 +1,6 @@
 <cfset servRoute53 = services.get('amazon-aws', 'route53') />
 
-<cfset user = transport.theSession.managers.singleton.getUser() />
-
-<cfset hostedZone = servRoute53.getHostedZone(user, theUrl.search('hostedZoneID')) />
+<cfset hostedZone = servRoute53.getHostedZone(theUrl.search('hostedZoneID')) />
 
 <cfif cgi.request_method eq 'post'>
 	<!--- Update the URL and redirect --->

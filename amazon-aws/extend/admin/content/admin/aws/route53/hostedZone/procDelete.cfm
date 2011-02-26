@@ -1,11 +1,9 @@
 <cfscript>
 	servRoute53 = services.get('amazon-aws', 'route53');
 	
-	user = transport.theSession.managers.singleton.getUser();
+	hostedZone = servRoute53.getHostedZone(theUrl.search('hostedZoneID'));
 	
-	hostedZone = servRoute53.getHostedZone(user, theUrl.search('hostedZoneID'));
-	
-	change = servRoute53.deleteHostedZone(user, hostedZone);
+	change = servRoute53.deleteHostedZone(hostedZone);
 	
 	// Redirect
 	theURL.setRedirect('_base', '/admin/aws/route53/change');

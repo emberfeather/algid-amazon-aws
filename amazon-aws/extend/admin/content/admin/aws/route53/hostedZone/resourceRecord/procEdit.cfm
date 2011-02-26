@@ -1,10 +1,8 @@
 <cfset servRoute53 = services.get('amazon-aws', 'route53') />
 
 <!--- Retrieve the object --->
-<cfset user = transport.theSession.managers.singleton.getUser() />
-
-<cfset hostedZone = servRoute53.getHostedZone(user, theUrl.search('hostedZoneID')) />
-<cfset resourceRecords = servRoute53.getResourceRecords(user, hostedZone ) />
+<cfset hostedZone = servRoute53.getHostedZone(theUrl.search('hostedZoneID')) />
+<cfset resourceRecords = servRoute53.getResourceRecords(hostedZone ) />
 
 <cfif cgi.request_method eq 'post'>
 	<!--- Process the form submission --->
@@ -44,13 +42,13 @@
 	</cfloop>
 	
 	<!--- Determine the change batch --->
-	<cfset changeBatch = servRoute53.detectChangeResourceRecords(user, hostedZone, changedResourceRecords) />
+	<cfset changeBatch = servRoute53.detectChangeResourceRecords(hostedZone, changedResourceRecords) />
 	
 	<!--- Add change batch comment --->
 	<cfset changeBatch.setComment('Adding the A record for the PreHealth Facts domain.') />
 	
 	<!--- Submit the changes as a batch --->
-	<cfset change = servRoute53.setResourceRecords(user, hostedZone, changeBatch) />
+	<cfset change = servRoute53.setResourceRecords(hostedZone, changeBatch) />
 	
 	<!--- Redirect --->
 	<cfset theURL.setRedirect('_base', '/admin/aws/route53/change') />

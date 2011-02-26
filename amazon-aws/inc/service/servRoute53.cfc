@@ -17,7 +17,6 @@
 	</cffunction>
 	
 	<cffunction name="deleteHostedZone" access="public" returntype="struct" output="false">
-		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZone" type="component" required="true" />
 		
 		<cfset var change = '' />
@@ -36,7 +35,7 @@
 		<cfset observer = getPluginObserver('amazon-aws', 'route53') />
 		
 		<!--- Before Delete Event --->
-		<cfset observer.beforeHostedZoneDelete(variables.transport, arguments.currUser, arguments.hostedZone) />
+		<cfset observer.beforeHostedZoneDelete(variables.transport, arguments.hostedZone) />
 		
 		<!--- Send Delete Request --->
 		<cfhttp method="delete" url="https://#variables.service.hostname#/#variables.service.version#/hostedzone/#listLast(arguments.hostedZone.getHostedZoneID(), '/')#" result="results">
@@ -58,13 +57,12 @@
 		<cfset change.setSubmittedAt(parsed.submittedAt.id.xmlText) />
 		
 		<!--- After Delete Event --->
-		<cfset observer.afterHostedZoneDelete(variables.transport, arguments.currUser, arguments.hostedZone) />
+		<cfset observer.afterHostedZoneDelete(variables.transport, arguments.hostedZone) />
 		
 		<cfreturn change />
 	</cffunction>
 	
 	<cffunction name="detectChangeResourceRecords" access="public" returntype="component" output="false">
-		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZone" type="component" required="true" />
 		<cfargument name="resourceRecords" type="array" required="true" />
 		
@@ -76,7 +74,7 @@
 		
 		<cfset changeBatch = getModel('amazon-aws', 'changeBatch') />
 		
-		<cfset originResourceRecords = getResourceRecords(arguments.currUser, arguments.hostedZone) />
+		<cfset originResourceRecords = getResourceRecords(arguments.hostedZone) />
 		
 		<!--- Check if there are any origin records that were not matching in the new records --->
 		<cfloop array="#originResourceRecords#" index="i">
@@ -121,7 +119,6 @@
 	</cffunction>
 	
 	<cffunction name="getChange" access="public" returntype="component" output="false">
-		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="changeID" type="string" required="true" />
 		
 		<cfset var delegationSet = '' />
@@ -141,7 +138,7 @@
 		<cfset change = getModel('amazon-aws', 'change') />
 		
 		<!--- Before Get Event --->
-		<cfset observer.beforeChangeGet(variables.transport, arguments.currUser, arguments.changeID) />
+		<cfset observer.beforeChangeGet(variables.transport, arguments.changeID) />
 		
 		<!--- Retrieve the change --->
 		<cfhttp method="get" url="https://#variables.service.hostname#/#variables.service.version#/change/#listLast(arguments.changeID, '/')#" result="results">
@@ -160,7 +157,7 @@
 		<cfset change.setSubmittedAt(parsed.changeInfo.submittedAt.xmlText) />
 		
 		<!--- After Get Event --->
-		<cfset observer.afterChangeGet(variables.transport, arguments.currUser, arguments.changeID) />
+		<cfset observer.afterChangeGet(variables.transport, arguments.changeID) />
 		
 		<cfreturn change />
 	</cffunction>
@@ -172,7 +169,6 @@
 	</cffunction>
 	
 	<cffunction name="getHostedZone" access="public" returntype="component" output="false">
-		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZoneID" type="string" required="true" />
 		
 		<cfset var delegationSet = '' />
@@ -192,7 +188,7 @@
 		<cfset hostedZone = getModel('amazon-aws', 'hostedZone') />
 		
 		<!--- Before Get Event --->
-		<cfset observer.beforeHostedZoneGet(variables.transport, arguments.currUser, arguments.hostedZoneID) />
+		<cfset observer.beforeHostedZoneGet(variables.transport, arguments.hostedZoneID) />
 		
 		<cfif len(arguments.hostedZoneID)>
 			<!--- Retrieve the hosted zone --->
@@ -224,13 +220,12 @@
 		</cfif>
 		
 		<!--- After Get Event --->
-		<cfset observer.afterHostedZoneGet(variables.transport, arguments.currUser, arguments.hostedZoneID) />
+		<cfset observer.afterHostedZoneGet(variables.transport, arguments.hostedZoneID) />
 		
 		<cfreturn hostedZone />
 	</cffunction>
 	
 	<cffunction name="getHostedZones" access="public" returntype="query" output="false">
-		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="filter" type="struct" default="#{}#" />
 		
 		<cfset var defaults = {
@@ -277,7 +272,6 @@
 	</cffunction>
 	
 	<cffunction name="getResourceRecords" access="public" returntype="array" output="false">
-		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZone" type="component" required="true" />
 		<cfargument name="filter" type="struct" default="#{}#" />
 		
@@ -341,7 +335,6 @@
 	</cffunction>
 	
 	<cffunction name="setHostedZone" access="public" returntype="component" output="false">
-		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZone" type="component" required="true" />
 		
 		<cfset var change = '' />
@@ -360,10 +353,10 @@
 		<cfset observer = getPluginObserver('amazon-aws', 'route53') />
 		
 		<!--- Before Save Event --->
-		<cfset observer.beforeHostedZoneSave(variables.transport, arguments.currUser, arguments.hostedZone) />
+		<cfset observer.beforeHostedZoneSave(variables.transport, arguments.hostedZone) />
 		
 		<!--- Before Create Event --->
-		<cfset observer.beforeHostedZoneCreate(variables.transport, arguments.currUser, arguments.hostedZone) />
+		<cfset observer.beforeHostedZoneCreate(variables.transport, arguments.hostedZone) />
 		
 		<!--- Create XMl request --->
 		<cfsavecontent variable="requestXml" trim="true">
@@ -418,16 +411,15 @@
 		<cfset hostedZone.setDelegationSet(delegationSet) />
 		
 		<!--- After Create Event --->
-		<cfset observer.afterHostedZoneCreate(variables.transport, arguments.currUser, arguments.hostedZone) />
+		<cfset observer.afterHostedZoneCreate(variables.transport, arguments.hostedZone) />
 		
 		<!--- After Save Event --->
-		<cfset observer.afterHostedZoneSave(variables.transport, arguments.currUser, arguments.hostedZone) />
+		<cfset observer.afterHostedZoneSave(variables.transport, arguments.hostedZone) />
 		
 		<cfreturn change />
 	</cffunction>
 	
 	<cffunction name="setResourceRecords" access="public" returntype="component" output="false">
-		<cfargument name="currUser" type="component" required="true" />
 		<cfargument name="hostedZone" type="component" required="true" />
 		<cfargument name="changeBatch" type="component" required="true" />
 		
@@ -449,7 +441,7 @@
 		<cfset observer = getPluginObserver('amazon-aws', 'route53') />
 		
 		<!--- Before Save Event --->
-		<cfset observer.beforeResourceRecordSave(variables.transport, arguments.currUser, arguments.hostedZone, arguments.changeBatch) />
+		<cfset observer.beforeResourceRecordSave(variables.transport, arguments.hostedZone, arguments.changeBatch) />
 		
 		<cfset changes = arguments.changeBatch.getResourceRecords() />
 		
@@ -518,7 +510,7 @@
 		<cfset hostedZone.setChange(change) />
 		
 		<!--- After Save Event --->
-		<cfset observer.afterResourceRecordSave(variables.transport, arguments.currUser, arguments.hostedZone, arguments.changeBatch) />
+		<cfset observer.afterResourceRecordSave(variables.transport, arguments.hostedZone, arguments.changeBatch) />
 		
 		<cfreturn change />
 	</cffunction>
