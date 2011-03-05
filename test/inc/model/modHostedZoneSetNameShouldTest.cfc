@@ -1,6 +1,7 @@
-component extends="mxunit.framework.TestCase" {
+component extends="algid.inc.resource.base.modelTest" {
 	public void function setup() {
-		variables.i18n = createObject('component', 'cf-compendium.inc.resource.i18n.i18n').init(expandPath('/'));
+		super.setup();
+		
 		variables.hostedZone = createObject('component', 'plugins.amazon-aws.inc.model.modHostedZone').init(variables.i18n);
 	}
 	
