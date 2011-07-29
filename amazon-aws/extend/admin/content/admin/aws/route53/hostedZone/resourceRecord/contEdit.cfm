@@ -4,5 +4,5 @@
 <cfset filter = {} />
 
 <cfoutput>
-	#viewRoute53.editResourceRecords( resourceRecords, form )#
+	#viewRoute53.editResourceRecords( resourceRecords )#
 </cfoutput>

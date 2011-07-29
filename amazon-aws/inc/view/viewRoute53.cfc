@@ -1,7 +1,6 @@
 <cfcomponent extends="algid.inc.resource.base.view" output="false">
 	<cffunction name="addHostedZone" access="public" returntype="string" output="false">
 		<cfargument name="hostedZone" type="component" required="true" />
-		<cfargument name="request" type="struct" default="#{}#" />
 		
 		<cfset var i18n = '' />
 		<cfset var theForm = '' />
@@ -15,16 +14,16 @@
 		<cfset theForm.addBundle('plugins/amazon-aws/i18n/inc/view', 'viewRoute53') />
 		
 		<cfset theForm.addElement('text', {
-				name = "name",
-				label = "hostedZone",
-				value = ( structKeyExists(arguments.request, 'name') ? arguments.request.name : arguments.hostedZone.getName() )
-			}) />
+			name = "name",
+			label = "hostedZone",
+			value = arguments.hostedZone.getName()
+		}) />
 		
 		<cfset theForm.addElement('text', {
-				name = "comment",
-				label = "comment",
-				value = ( structKeyExists(arguments.request, 'comment') ? arguments.request.comment : arguments.hostedZone.getComment() )
-			}) />
+			name = "comment",
+			label = "comment",
+			value = arguments.hostedZone.getComment()
+		}) />
 		
 		<cfreturn theForm.toHTML(theURL.get()) />
 	</cffunction>
@@ -57,7 +56,6 @@
 	
 	<cffunction name="editResourceRecords" access="public" returntype="string" output="false">
 		<cfargument name="resourceRecords" type="array" required="true" />
-		<cfargument name="request" type="struct" default="#{}#" />
 		
 		<cfset var counter = '' />
 		<cfset var i = '' />
@@ -108,16 +106,16 @@
 									<cfif resourceRecord.isEditable()>
 										<tr>
 											<td class="col name column-0">
-												<input type="text" name="resourceRecord_#counter#_name" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : resourceRecord.getName())#" style="width: 200px; min-width: 10px;" />
+												<input type="text" name="resourceRecord_#counter#_name" value="#htmleditformat(resourceRecord.getName())#" style="width: 200px; min-width: 10px;" />
 											</td>
 											<td class="col ttl column-1">
-												<input type="text" name="resourceRecord_#counter#_ttl" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_ttl') ? arguments.request['resourceRecord_#counter#_ttl'] : resourceRecord.getTTL())#" style="width: 50px; min-width: 10px;" />
+												<input type="text" name="resourceRecord_#counter#_ttl" value="#htmleditformat(resourceRecord.getTTL())#" style="width: 50px; min-width: 10px;" />
 											</td>
 											<td class="col type column-2">
-												#formSelect('resourceRecord_#counter#_type', options, (structKeyExists(arguments.request, 'resourceRecord_#counter#_type') ? arguments.request['resourceRecord_#counter#_type'] : resourceRecord.getType()))#
+												#formSelect('resourceRecord_#counter#_type', options, resourceRecord.getType())#
 											</td>
 											<td class="col value column-3">
-												<input type="text" name="resourceRecord_#counter#_value" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : record)#" style="width: 450px; min-width: 10px;" />
+												<input type="text" name="resourceRecord_#counter#_value" value="#htmleditformat(record)#" style="width: 450px; min-width: 10px;" />
 											</td>
 										</tr>
 									<cfelse>
@@ -145,16 +143,16 @@
 							<cfloop from="1" to="10" index="i">
 								<tr>
 									<td class="col name column-0">
-										<input type="text" name="resourceRecord_#counter#_name" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_name') ? arguments.request['resourceRecord_#counter#_name'] : '')#" style="width: 200px; min-width: 10px;" />
+										<input type="text" name="resourceRecord_#counter#_name" value="" style="width: 200px; min-width: 10px;" />
 									</td>
 									<td class="col ttl column-1">
-										<input type="text" name="resourceRecord_#counter#_ttl" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_ttl') ? arguments.request['resourceRecord_#counter#_ttl'] : '')#" style="width: 50px; min-width: 10px;" />
+										<input type="text" name="resourceRecord_#counter#_ttl" value="" style="width: 50px; min-width: 10px;" />
 									</td>
 									<td class="col type column-2">
-										#formSelect('resourceRecord_#counter#_type', options, (structKeyExists(arguments.request, 'resourceRecord_#counter#_type') ? arguments.request['resourceRecord_#counter#_type'] : ''))#
+										#formSelect('resourceRecord_#counter#_type', options, '')#
 									</td>
 									<td class="col value column-3">
-										<input type="text" name="resourceRecord_#counter#_value" value="#htmleditformat(structKeyExists(arguments.request, 'resourceRecord_#counter#_value') ? arguments.request['resourceRecord_#counter#_value'] : '')#" style="width: 450px; min-width: 10px;" />
+										<input type="text" name="resourceRecord_#counter#_value" value="" style="width: 450px; min-width: 10px;" />
 									</td>
 								</tr>
 								
