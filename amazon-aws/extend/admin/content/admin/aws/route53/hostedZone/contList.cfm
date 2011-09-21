@@ -1,4 +1,4 @@
-<cfset hostedZones = servRoute53.getHostedZones(user) />
+<cfset hostedZones = servRoute53.getHostedZones() />
 
 <cfset paginate = variables.transport.theApplication.factories.transient.getPaginate(hostedZones.recordcount, session.numPerPage, theURL.searchID('onPage')) />
 
